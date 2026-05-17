@@ -65,3 +65,4 @@ Default admin: `admin@shopcloud.com` / `Admin@1234`
 - Role-Based Access Control (customer / admin)
 - HTTPS enforced via Nginx + Let's Encrypt / AWS ACM
 - Security headers: HSTS, X-Frame-Options, X-Content-Type-Options
+# Shopcloud
