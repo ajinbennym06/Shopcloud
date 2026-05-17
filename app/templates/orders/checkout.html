@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Checkout – ShopCloud{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <div class="row g-4" style="max-width:900px;margin:auto">
+    <div class="col-md-7">
+      <h3 class="fw-bold mb-4">Delivery details</h3>
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+          <label class="form-label">Full delivery address</label>
+          <textarea name="address" class="form-control" rows="4" required
+            placeholder="House/Flat no., Street, City, State, PIN code"></textarea>
+        </div>
+        <div class="alert alert-info small">
+          <i class="bi bi-info-circle me-1"></i>
+          This is a mock checkout — no real payment is processed.
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2">Place order</button>
+      </form>
+    </div>
+    <div class="col-md-5">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h5 class="fw-bold mb-3">Order summary</h5>
+          {% for item in items %}
+            <div class="d-flex justify-content-between small mb-2">
+              <span>{{ item.product.name }} × {{ item.quantity }}</span>
+              <span>₹{{ "%.2f"|format(item.product.price * item.quantity) }}</span>
+            </div>
+          {% endfor %}
+          <hr>
+          <div class="d-flex justify-content-between fw-bold">
+            <span>Total</span>
+            <span class="text-primary">₹{{ "%.2f"|format(total) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

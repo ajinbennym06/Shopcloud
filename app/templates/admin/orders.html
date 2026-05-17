@@ -1,0 +1,44 @@
+{% extends 'admin/base.html' %}
+{% block title %}Manage Orders{% endblock %}
+{% block admin_content %}
+<h3 class="fw-bold mb-4">Orders</h3>
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead class="table-light"><tr>
+        <th>#</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th><th>Update</th>
+      </tr></thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.customer.name }}<br><small class="text-muted">{{ order.customer.email }}</small></td>
+            <td>{{ order.items | length }}</td>
+            <td>₹{{ "%.2f"|format(order.total_amount) }}</td>
+            <td><span class="badge
+              {% if order.status == 'delivered' %}bg-success
+              {% elif order.status == 'cancelled' %}bg-danger
+              {% elif order.status == 'shipped' %}bg-info
+              {% elif order.status == 'confirmed' %}bg-primary
+              {% else %}bg-secondary{% endif %}">{{ order.status }}</span></td>
+            <td>{{ order.ordered_at.strftime('%d %b %Y') }}</td>
+            <td>
+              <form method="POST" action="{{ url_for('admin.order_status', order_id=order.id) }}" class="d-flex gap-1">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <select name="status" class="form-select form-select-sm" style="width:130px">
+                  {% for s in ['pending','confirmed','shipped','delivered','cancelled'] %}
+                    <option value="{{ s }}" {{ 'selected' if order.status == s }}>{{ s | capitalize }}</option>
+                  {% endfor %}
+                </select>
+                <button class="btn btn-sm btn-outline-primary">Set</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="text-center text-muted py-4">No orders.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

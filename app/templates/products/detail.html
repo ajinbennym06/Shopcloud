@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} – ShopCloud{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('products.index') }}">Shop</a></li>
+      {% if product.category %}
+        <li class="breadcrumb-item"><a href="{{ url_for('products.index', category=product.category_id) }}">{{ product.category.name }}</a></li>
+      {% endif %}
+      <li class="breadcrumb-item active">{{ product.name }}</li>
+    </ol>
+  </nav>
+
+  <div class="row g-4">
+    <div class="col-md-5">
+      {% if product.image_url %}
+        <img src="{{ product.image_url }}" class="img-fluid rounded shadow-sm" alt="{{ product.name }}">
+      {% else %}
+        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height:360px">
+          <i class="bi bi-image text-muted" style="font-size:5rem"></i>
+        </div>
+      {% endif %}
+    </div>
+    <div class="col-md-7">
+      <p class="text-muted small">{{ product.category.name if product.category }}</p>
+      <h1 class="h2 fw-bold">{{ product.name }}</h1>
+      <p class="fs-3 fw-bold text-primary">₹{{ "%.2f"|format(product.price) }}</p>
+      <p>{{ product.description or 'No description available.' }}</p>
+      <p class="small {% if product.stock > 5 %}text-success{% elif product.stock > 0 %}text-warning{% else %}text-danger{% endif %}">
+        <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>
+        {% if product.stock > 5 %}In stock ({{ product.stock }} available)
+        {% elif product.stock > 0 %}Only {{ product.stock }} left!
+        {% else %}Out of stock{% endif %}
+      </p>
+      {% if product.stock > 0 and current_user.is_authenticated %}
+        <form method="POST" action="{{ url_for('cart.add', product_id=product.id) }}" class="d-flex gap-2">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="form-control" style="width:80px">
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-cart-plus"></i> Add to cart
+          </button>
+        </form>
+      {% elif not current_user.is_authenticated %}
+        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">Login to buy</a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if related %}
+    <hr class="my-5">
+    <h4 class="fw-bold mb-3">Related products</h4>
+    <div class="row row-cols-2 row-cols-md-4 g-3">
+      {% for p in related %}
+        <div class="col">
+          <div class="card h-100 border-0 shadow-sm product-card">
+            <a href="{{ url_for('products.detail', product_id=p.id) }}">
+              {% if p.image_url %}
+                <img src="{{ p.image_url }}" class="card-img-top product-img" alt="{{ p.name }}">
+              {% else %}
+                <div class="product-img bg-light d-flex align-items-center justify-content-center">
+                  <i class="bi bi-image text-muted fs-1"></i>
+                </div>
+              {% endif %}
+            </a>
+            <div class="card-body">
+              <h6 class="card-title"><a href="{{ url_for('products.detail', product_id=p.id) }}" class="text-dark text-decoration-none">{{ p.name }}</a></h6>
+              <p class="fw-bold text-primary mb-0">₹{{ "%.2f"|format(p.price) }}</p>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
