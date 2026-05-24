@@ -19,20 +19,35 @@ jobs:
         run: |
           pip install -r requirements.txt
           python -c "from app import create_app; print('App imports OK')"
+        env:
+          SECRET_KEY: ci-test-secret
+          DB_HOST: localhost
+          DB_PORT: 3306
+          DB_NAME: test_db
+          DB_USER: root
+          DB_PASSWORD: password
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_REGION: ap-south-1
+          S3_BUCKET: test-bucket
 
       - name: Build Docker image
         run: docker build -t shopcloud:latest .
 
-      - name: Deploy to EC2 via SSH
+      - name: Deploy to EC2 via Bastion
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.EC2_HOST }}
+          host: ${{ secrets.APP_PRIVATE_IP }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
+          proxy_host: ${{ secrets.BASTION_IP }}
+          proxy_username: ubuntu
+          proxy_key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /app
+            cd /app/ecommerce-app
             git pull origin main
-            pip install -r requirements.txt
+            source venv/bin/activate
+            pip install -q -r requirements.txt
             flask db upgrade
             sudo systemctl restart shopcloud
             echo "Deployed at $(date)"
